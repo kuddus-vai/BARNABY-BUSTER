@@ -1,0 +1,6 @@
+{
+  "name": "Barnaby Buster Bark-Waggen | Official Site",
+  "description": "The official digital HQ of Barnaby 'Buster' Bark-Waggen: NYC street walker, zoomie athlete, pet-human ambassador, merch vault, soundboard, and dog park tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

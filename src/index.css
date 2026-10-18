@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #FF3366;
+    --secondary: #FFCC00;
+    --accent: #00FFFF;
+    --dark: #121212;
+    --light: #F9F9F9;
+    --font-marker: 'Permanent Marker', cursive;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  body {
+    background-color: var(--dark);
+    color: var(--light);
+    font-family: var(--font-body);
+  }
+}
+
+.font-marker {
+  font-family: 'Permanent Marker', cursive;
+}
+
+.font-heading {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Retro Scanlines Overlay */
+.crt-scanlines::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 18, 18, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 40;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Brutalist hard shadows */
+.shadow-brutal-pink {
+  box-shadow: 5px 5px 0px #FF3366;
+}
+
+.shadow-brutal-yellow {
+  box-shadow: 5px 5px 0px #FFCC00;
+}
+
+.shadow-brutal-cyan {
+  box-shadow: 5px 5px 0px #00FFFF;
+}
+
+.shadow-brutal-white {
+  box-shadow: 4px 4px 0px #FFFFFF;
+}
+
+.shadow-brutal-black {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+@keyframes bounceSlow {
+  0% { transform: translateY(0) rotate(var(--rot, -6deg)); }
+  100% { transform: translateY(-7px) rotate(var(--rot-end, -3deg)); }
+}
+
+.animate-sticker {
+  animation: bounceSlow 3s ease-in-out infinite alternate;
+}
