@@ -897,32 +897,35 @@ export const AdminPanel: React.FC = () => {
                   
                   <div className="space-y-4 text-xs font-mono text-neutral-300">
                     <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Step 1: Build the Static Bundle</p>
-                      <code className="text-amber-400 block bg-neutral-900 p-2 rounded mt-1">
-                        npm run build
-                      </code>
-                      <p className="text-[11px] text-neutral-400 mt-1">
-                        This compiles the entire site with relative asset paths (<code className="text-neutral-200">base: './'</code>) into the <code className="text-neutral-200">dist/</code> folder.
+                      <p className="text-[#00FFFF] font-bold mb-1">Option A: Automated via GitHub Actions (Zero Commands)</p>
+                      <p className="text-neutral-300 leading-relaxed">
+                        We generated <code className="text-amber-400">.github/workflows/deploy.yml</code>. Whenever you push commits to GitHub, GitHub automatically builds and deploys your site!
+                      </p>
+                      <p className="text-[11px] text-neutral-400 mt-2">
+                        Just go to GitHub repo → <strong>Settings</strong> → <strong>Pages</strong> → Build and deployment Source: <strong>GitHub Actions</strong>.
                       </p>
                     </div>
 
                     <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Step 2: Deploy to GitHub Pages</p>
+                      <p className="text-[#00FFFF] font-bold mb-1">Option B: 1-Click Terminal Command</p>
                       <p className="text-neutral-300 leading-relaxed mb-2">
-                        You can deploy using GitHub Pages Settings or the simple <code className="text-amber-400">gh-pages</code> tool:
+                        Run the new deploy script we configured in your package.json:
                       </p>
                       <code className="text-amber-400 block bg-neutral-900 p-2 rounded">
-                        npx gh-pages -d dist
+                        npm run deploy
                       </code>
+                      <p className="text-[11px] text-neutral-400 mt-2">
+                        This compiles the production bundle and pushes to the <code className="text-neutral-200">gh-pages</code> branch.
+                      </p>
                     </div>
 
                     <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Step 3: Repository Settings</p>
+                      <p className="text-[#00FFFF] font-bold mb-1">Live URL Format</p>
                       <p className="text-neutral-300 leading-relaxed">
-                        Go to your repository on GitHub → <strong>Settings</strong> → <strong>Pages</strong> → Source: <strong>Deploy from branch</strong> (gh-pages / root). Your site will go live at:
+                        Your site is configured with relative base paths (<code className="text-neutral-200">base: './'</code>), so it works flawlessly on any repository name or custom domain:
                       </p>
                       <p className="text-[#FFCC00] mt-1 font-bold">
-                        https://yourusername.github.io/your-repo-name/
+                        https://&lt;your-github-username&gt;.github.io/&lt;your-repository-name&gt;/
                       </p>
                     </div>
                   </div>
