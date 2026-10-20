@@ -3,7 +3,6 @@ import { BusterProvider, useBuster } from './context/BusterContext';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { VibeMetrics } from './components/VibeMetrics';
-import { Soundboard } from './components/Soundboard';
 import { VlogVault } from './components/VlogVault';
 import { MerchStore } from './components/MerchStore';
 import { PromotionRequestSection } from './components/PromotionRequestSection';
@@ -14,7 +13,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { scanlinesEnabled, toast, setIsAdminOpen } = useBuster();
+  const { toast, setIsAdminOpen } = useBuster();
 
   useEffect(() => {
     // Check if URL contains /kuddus slug, or hash #/kuddus or #kuddus
@@ -53,7 +52,7 @@ const AppContent: React.FC = () => {
   }, [setIsAdminOpen]);
 
   return (
-    <div className={`min-h-screen bg-[#121212] text-[#F9F9F9] flex flex-col relative ${scanlinesEnabled ? 'crt-scanlines' : ''}`}>
+    <div className="min-h-screen bg-[#121212] text-[#F9F9F9] flex flex-col relative">
       
       {/* Toast Alert */}
       {toast && (
@@ -72,7 +71,6 @@ const AppContent: React.FC = () => {
       {/* Main Content Sections */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
         <VibeMetrics />
-        <Soundboard />
         <VlogVault />
         <MerchStore />
         <PromotionRequestSection />

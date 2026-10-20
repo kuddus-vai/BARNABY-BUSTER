@@ -1,11 +1,9 @@
 import React from 'react';
-import { Volume2, Tv, Dog } from 'lucide-react';
+import { Volume2, Dog } from 'lucide-react';
 import { useBuster } from '../context/BusterContext';
 
 export const Footer: React.FC = () => {
   const {
-    scanlinesEnabled,
-    setScanlinesEnabled,
     soundEnabled,
     setSoundEnabled
   } = useBuster();
@@ -36,14 +34,6 @@ export const Footer: React.FC = () => {
           >
             <Volume2 className="w-3.5 h-3.5" />
             <span>Sound: {soundEnabled ? 'ON' : 'MUTED'}</span>
-          </button>
-
-          <button
-            onClick={() => setScanlinesEnabled(prev => !prev)}
-            className="px-3 py-1.5 rounded bg-neutral-900 border border-neutral-800 hover:border-[#FFCC00] text-neutral-300 hover:text-[#FFCC00] flex items-center gap-1.5 transition-colors"
-          >
-            <Tv className="w-3.5 h-3.5" />
-            <span>Scanlines: {scanlinesEnabled ? 'ACTIVE' : 'OFF'}</span>
           </button>
         </div>
 

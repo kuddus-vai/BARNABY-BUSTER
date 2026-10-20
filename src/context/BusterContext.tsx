@@ -121,7 +121,7 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [scanlinesEnabled, setScanlinesEnabled] = useState(true);
+  const [scanlinesEnabled, setScanlinesEnabled] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   // Sync products to localStorage

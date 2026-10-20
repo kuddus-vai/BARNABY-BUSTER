@@ -51,12 +51,6 @@ export const Navbar: React.FC = () => {
             Vibe Metrics
           </a>
           <a 
-            href="#soundboard" 
-            className="hover:text-[#FF3366] transition-colors hover:underline underline-offset-8 decoration-2 decoration-[#FF3366] whitespace-nowrap shrink-0"
-          >
-            Soundboard
-          </a>
-          <a 
             href="#vlog-vault" 
             className="hover:text-[#FFCC00] transition-colors hover:underline underline-offset-8 decoration-2 decoration-[#FFCC00] whitespace-nowrap shrink-0"
           >
@@ -142,13 +136,6 @@ export const Navbar: React.FC = () => {
               className="px-3 py-2 rounded bg-neutral-900 text-neutral-200 hover:text-[#00FFFF]"
             >
               ⚡ Vibe Metrics
-            </a>
-            <a 
-              href="#soundboard" 
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded bg-neutral-900 text-neutral-200 hover:text-[#FF3366]"
-            >
-              🔊 Interactive Soundboard
             </a>
             <a 
               href="#vlog-vault" 
