@@ -6,10 +6,14 @@
     <script>
       // Single Page Apps for GitHub Pages
       // Redirects 404 paths back to index.html with query/hash intact
-      sessionStorage.redirect = location.href;
-      window.location.replace(
-        location.pathname.split('/').slice(0, 1 + (location.pathname.match(/\//g) || []).length - 1).join('/') + '/'
-      );
+      var path = location.pathname;
+      var repoBase = path.split('/').slice(0, 1 + (path.match(/\//g) || []).length - 1).join('/') + '/';
+      if (path.toLowerCase().endsWith('/kuddus')) {
+        window.location.replace(repoBase + '#/kuddus');
+      } else {
+        sessionStorage.redirect = location.href;
+        window.location.replace(repoBase);
+      }
     </script>
   </head>
   <body style="background:#121212;color:#FFCC00;font-family:sans-serif;text-align:center;padding:50px;">

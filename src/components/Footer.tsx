@@ -1,11 +1,9 @@
 import React from 'react';
-import { Shield, Volume2, Tv, Heart, Dog } from 'lucide-react';
+import { Volume2, Tv, Dog } from 'lucide-react';
 import { useBuster } from '../context/BusterContext';
 
 export const Footer: React.FC = () => {
   const {
-    setIsAdminOpen,
-    isAdminAuthenticated,
     scanlinesEnabled,
     setScanlinesEnabled,
     soundEnabled,
@@ -30,7 +28,7 @@ export const Footer: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Utility Toggles & Admin Lock */}
+        {/* Quick Utility Toggles */}
         <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
           <button
             onClick={() => setSoundEnabled(prev => !prev)}
@@ -46,18 +44,6 @@ export const Footer: React.FC = () => {
           >
             <Tv className="w-3.5 h-3.5" />
             <span>Scanlines: {scanlinesEnabled ? 'ACTIVE' : 'OFF'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsAdminOpen(true)}
-            className={`px-3 py-1.5 rounded border flex items-center gap-1.5 transition-colors ${
-              isAdminAuthenticated
-                ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
-                : 'bg-neutral-900 border-neutral-800 hover:border-[#FF3366] text-neutral-400 hover:text-[#FF3366]'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>{isAdminAuthenticated ? 'Admin Panel (Unlocked)' : 'Owner Admin Login'}</span>
           </button>
         </div>
 

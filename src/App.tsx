@@ -17,15 +17,39 @@ const AppContent: React.FC = () => {
   const { scanlinesEnabled, toast, setIsAdminOpen } = useBuster();
 
   useEffect(() => {
+    // Check if URL contains /kuddus slug, or hash #/kuddus or #kuddus
+    const checkSlug = () => {
+      const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+
+      const isKuddusPath = pathname.endsWith('/kuddus') || pathname === 'kuddus';
+      const isKuddusHash = hash === '#/kuddus' || hash === '#kuddus';
+      const isKuddusQuery = search.includes('kuddus') || search.includes('page=kuddus');
+
+      if (isKuddusPath || isKuddusHash || isKuddusQuery) {
+        setIsAdminOpen(true);
+      }
+    };
+
+    checkSlug();
+    window.addEventListener('hashchange', checkSlug);
+    window.addEventListener('popstate', checkSlug);
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl + Shift + A or Cmd + Shift + A opens Admin Panel
+      // Ctrl + Shift + A or Cmd + Shift + A still works as backup shortcut
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
         setIsAdminOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', checkSlug);
+      window.removeEventListener('popstate', checkSlug);
+    };
   }, [setIsAdminOpen]);
 
   return (
