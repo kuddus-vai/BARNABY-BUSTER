@@ -69,10 +69,10 @@ const AppContent: React.FC = () => {
       <Hero />
 
       {/* Main Content Sections */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <MerchStore />
         <VibeMetrics />
         <VlogVault />
-        <MerchStore />
         <PromotionRequestSection />
         <ParkRadarSection />
         <FanGuestbook />

@@ -8,7 +8,7 @@ const INITIAL_SOCIAL_LINKS: SocialLink[] = [
     id: 'social-fb',
     platform: 'Facebook',
     title: 'Facebook Page',
-    url: 'https://facebook.com',
+    url: 'https://www.facebook.com/profile.php?id=61595626226548',
     description: 'Catch the latest unhinged street vlogs, reels, and community mayhem!',
     buttonText: 'Visit Facebook',
     badgeText: '84.2K Followers',
@@ -19,7 +19,7 @@ const INITIAL_SOCIAL_LINKS: SocialLink[] = [
     id: 'social-ig',
     platform: 'Instagram',
     title: 'Instagram Reels',
-    url: 'https://instagram.com',
+    url: 'https://www.instagram.com/hyperactivebuster/',
     description: 'Daily stories, zoomie sprints, and behind-the-scenes NYC chaos.',
     buttonText: 'Visit Instagram',
     badgeText: '142K Followers',
@@ -35,17 +35,6 @@ const INITIAL_SOCIAL_LINKS: SocialLink[] = [
     buttonText: 'Watch YouTube',
     badgeText: '65K Subscribers',
     accentColor: '#00FFFF',
-    enabled: true
-  },
-  {
-    id: 'social-tt',
-    platform: 'TikTok',
-    title: 'TikTok Chaos Drops',
-    url: 'https://tiktok.com',
-    description: 'High-frequency 15-second zoomies, pigeon stalking, and treat ASMR.',
-    buttonText: 'Follow TikTok',
-    badgeText: '310K Followers',
-    accentColor: '#FFCC00',
     enabled: true
   }
 ];
@@ -83,11 +72,11 @@ interface BusterContextType {
 const BusterContext = createContext<BusterContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'buster_affiliate_products_v3',
-  SOCIALS: 'buster_socials_v3',
-  ADMIN_AUTH: 'buster_admin_auth_v3',
-  SOUND: 'buster_sound_pref_v3',
-  SCANLINES: 'buster_scanlines_pref_v3'
+  PRODUCTS: 'buster_affiliate_products_v4',
+  SOCIALS: 'buster_socials_v4',
+  ADMIN_AUTH: 'buster_admin_auth_v4',
+  SOUND: 'buster_sound_pref_v4',
+  SCANLINES: 'buster_scanlines_pref_v4'
 };
 
 export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Lock, 
@@ -15,10 +15,16 @@ import {
   Check, 
   AlertCircle,
   ExternalLink,
-  Save
+  Save,
+  Copy,
+  CheckCircle2,
+  Send,
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import { useBuster } from '../context/BusterContext';
 import { Product, SocialLink } from '../types';
+import { VLOGS, DOG_PARKS, FAN_BARKS } from '../data/busterData';
 
 export const AdminPanel: React.FC = () => {
   const {
@@ -96,6 +102,15 @@ export const AdminPanel: React.FC = () => {
     enabled: true
   });
 
+  // GitHub Direct Sync State
+  const [ghOwner, setGhOwner] = useState<string>(() => localStorage.getItem('buster_gh_owner') || '');
+  const [ghRepo, setGhRepo] = useState<string>(() => localStorage.getItem('buster_gh_repo') || 'BARNABY-BUSTER');
+  const [ghBranch, setGhBranch] = useState<string>(() => localStorage.getItem('buster_gh_branch') || 'main');
+  const [ghToken, setGhToken] = useState<string>(() => localStorage.getItem('buster_gh_token') || '');
+  const [ghStatus, setGhStatus] = useState<'idle' | 'pushing' | 'success' | 'error'>('idle');
+  const [ghMessage, setGhMessage] = useState<string>('');
+  const [copiedCode, setCopiedCode] = useState<boolean>(false);
+
   if (!isAdminOpen) return null;
 
   // Handle Login
@@ -155,7 +170,7 @@ export const AdminPanel: React.FC = () => {
       : ['Buster Approved'];
 
     if (editingProductId) {
-      updateProduct(editingProductId, {
+      const updates = {
         name: productForm.name,
         tagline: productForm.tagline,
         affiliateUrl: productForm.affiliateUrl,
@@ -167,10 +182,19 @@ export const AdminPanel: React.FC = () => {
         sizes: parsedSizes,
         imageUrl: productForm.imageUrl,
         details: parsedDetails
-      });
+      };
+
+      const nextProducts = products.map(p => (p.id === editingProductId ? { ...p, ...updates } : p));
+      updateProduct(editingProductId, updates);
       setEditingProductId(null);
+
+      // Auto-push to GitHub in background if configured
+      if (autoSyncOnSave && ghToken && ghOwner) {
+        pushProductsToGithub(nextProducts, true);
+      }
     } else {
-      addProduct({
+      const newProd: Product = {
+        id: `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         name: productForm.name,
         tagline: productForm.tagline,
         affiliateUrl: productForm.affiliateUrl,
@@ -185,7 +209,15 @@ export const AdminPanel: React.FC = () => {
         imageUrl: productForm.imageUrl,
         details: parsedDetails,
         inStock: true
-      });
+      };
+
+      const nextProducts = [newProd, ...products];
+      addProduct(newProd);
+
+      // Auto-push to GitHub in background if configured
+      if (autoSyncOnSave && ghToken && ghOwner) {
+        pushProductsToGithub(nextProducts, true);
+      }
     }
 
     handleCancelProductEdit();
@@ -262,6 +294,185 @@ export const AdminPanel: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Downloaded site data JSON!');
+  };
+
+  // Auto-Sync to GitHub on Add/Edit/Delete preference
+  const [autoSyncOnSave, setAutoSyncOnSave] = useState<boolean>(() => {
+    return localStorage.getItem('buster_auto_sync') !== 'false';
+  });
+
+  const toggleAutoSync = (enabled: boolean) => {
+    setAutoSyncOnSave(enabled);
+    localStorage.setItem('buster_auto_sync', enabled ? 'true' : 'false');
+    showToast(enabled ? '⚡ GitHub Auto-Sync ON: Saves will push to GitHub automatically.' : 'GitHub Auto-Sync turned OFF (manual push only).');
+  };
+
+  // Generate full src/data/busterData.ts code
+  const generateBusterDataCode = (overrideProducts?: Product[]): string => {
+    const listToEncode = overrideProducts || products;
+    return `import { Product } from '../types';
+
+export interface VlogItem {
+  id: string;
+  title: string;
+  platform: 'Instagram' | 'Facebook' | 'YouTube' | 'TikTok';
+  views: string;
+  duration: string;
+  thumbnail: string;
+  description: string;
+  date: string;
+  tags: string[];
+  commentsCount: number;
+}
+
+export interface ParkRadar {
+  id: string;
+  name: string;
+  neighborhood: string;
+  vibeScore: number;
+  vibeStatus: string;
+  activeDogsCount: number;
+  currentActivity: string;
+  lastUpdated: string;
+  tags: string[];
+}
+
+export interface FanBark {
+  id: string;
+  author: string;
+  dogName: string;
+  breed: string;
+  message: string;
+  timestamp: string;
+  sticker: string;
+  likes: number;
+}
+
+export const PRODUCTS: Product[] = ${JSON.stringify(listToEncode, null, 2)};
+
+export const VLOGS: VlogItem[] = ${JSON.stringify(VLOGS, null, 2)};
+
+export const DOG_PARKS: ParkRadar[] = ${JSON.stringify(DOG_PARKS, null, 2)};
+
+export const FAN_BARKS: FanBark[] = ${JSON.stringify(FAN_BARKS, null, 2)};
+`;
+  };
+
+  // Download busterData.ts file
+  const handleDownloadBusterData = () => {
+    const code = generateBusterDataCode();
+    const blob = new Blob([code], { type: 'text/typescript;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'busterData.ts';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded busterData.ts! Replace src/data/busterData.ts to publish to GitHub.');
+  };
+
+  // Copy code to clipboard
+  const handleCopyCode = async () => {
+    const code = generateBusterDataCode();
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 3000);
+      showToast('Copied busterData.ts code to clipboard!');
+    } catch {
+      showToast('Clipboard access denied. Please click Download busterData.ts instead.');
+    }
+  };
+
+  // Push directly to GitHub repo via REST API (manual or auto)
+  const pushProductsToGithub = async (overrideProducts?: Product[], isAuto = false): Promise<boolean> => {
+    const cleanOwner = ghOwner.trim() || localStorage.getItem('buster_gh_owner')?.trim() || '';
+    const cleanRepo = ghRepo.trim() || localStorage.getItem('buster_gh_repo')?.trim() || 'BARNABY-BUSTER';
+    const cleanBranch = ghBranch.trim() || localStorage.getItem('buster_gh_branch')?.trim() || 'main';
+    const cleanToken = ghToken.trim() || localStorage.getItem('buster_gh_token')?.trim() || '';
+    const targetProducts = overrideProducts || products;
+
+    if (!cleanOwner || !cleanRepo || !cleanToken) {
+      if (!isAuto) {
+        setGhStatus('error');
+        setGhMessage('Please fill in GitHub Username/Owner, Repository Name, and Personal Access Token.');
+      }
+      return false;
+    }
+
+    setGhStatus('pushing');
+    setGhMessage(isAuto ? 'Auto-syncing changes to GitHub repository...' : 'Connecting to GitHub API to commit changes...');
+
+    if (isAuto) {
+      showToast('⚡ Auto-syncing update to GitHub in background...');
+    }
+
+    try {
+      localStorage.setItem('buster_gh_owner', cleanOwner);
+      localStorage.setItem('buster_gh_repo', cleanRepo);
+      localStorage.setItem('buster_gh_branch', cleanBranch);
+      localStorage.setItem('buster_gh_token', cleanToken);
+
+      const generatedCode = generateBusterDataCode(targetProducts);
+      const encodedContent = btoa(unescape(encodeURIComponent(generatedCode)));
+
+      // 1. Get current file sha (if file exists)
+      const fileUrl = `https://api.github.com/repos/${cleanOwner}/${cleanRepo}/contents/src/data/busterData.ts?ref=${cleanBranch}`;
+      let currentSha: string | undefined = undefined;
+
+      const getRes = await fetch(fileUrl, {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`,
+          Accept: 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      } else if (getRes.status === 401) {
+        throw new Error('Invalid GitHub token. Ensure your token has "repo" or "contents:write" permission.');
+      }
+
+      // 2. Commit update
+      const putRes = await fetch(`https://api.github.com/repos/${cleanOwner}/${cleanRepo}/contents/src/data/busterData.ts`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${cleanToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `chore: auto-sync ${targetProducts.length} products from Buster Admin Panel`,
+          content: encodedContent,
+          sha: currentSha,
+          branch: cleanBranch
+        })
+      });
+
+      if (!putRes.ok) {
+        const errData = await putRes.json().catch(() => ({}));
+        throw new Error(errData.message || `GitHub error ${putRes.status}`);
+      }
+
+      setGhStatus('success');
+      const successMsg = `🎉 Synced to GitHub! ${targetProducts.length} products committed to ${cleanOwner}/${cleanRepo}@${cleanBranch}. GitHub Actions will deploy automatically in ~60s.`;
+      setGhMessage(successMsg);
+      showToast('🎉 Synced to GitHub! Live site is deploying automatically.');
+      return true;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown network error';
+      setGhStatus('error');
+      setGhMessage(`Sync failed: ${msg}`);
+      showToast(`GitHub sync failed: ${msg}`);
+      return false;
+    }
+  };
+
+  const handlePushToGithub = () => {
+    pushProductsToGithub(products, false);
   };
 
   // Import JSON file upload
@@ -400,7 +611,10 @@ export const AdminPanel: React.FC = () => {
                 }`}
               >
                 <GitBranch className="w-4 h-4" />
-                <span>GITHUB PAGES & BACKUP</span>
+                <span>GITHUB SYNC & BACKUP</span>
+                <span className="text-[10px] bg-[#FF3366]/20 text-[#FF3366] px-1.5 py-0.5 rounded font-mono">
+                  LIVE
+                </span>
               </button>
             </div>
 
@@ -408,6 +622,49 @@ export const AdminPanel: React.FC = () => {
             {activeTab === 'products' && (
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 
+                {/* Live Sync Banner */}
+                <div className="p-3 bg-neutral-900 border border-neutral-700 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${ghToken && ghOwner ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                      <span className="text-white font-bold">{products.length} Products Active</span>
+                    </div>
+                    <span className="text-neutral-400">
+                      {ghToken && ghOwner ? (
+                        autoSyncOnSave 
+                          ? '· ⚡ Auto-Sync ON: Saves push to GitHub automatically'
+                          : '· GitHub connected (Auto-Sync paused)'
+                      ) : (
+                        '· Saved in browser. Connect GitHub to auto-publish live.'
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {ghToken && ghOwner ? (
+                      <button
+                        onClick={() => toggleAutoSync(!autoSyncOnSave)}
+                        className={`px-2.5 py-1 text-[11px] font-mono rounded border transition-colors ${
+                          autoSyncOnSave 
+                            ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50 hover:bg-emerald-900/60' 
+                            : 'bg-neutral-800 text-neutral-300 border-neutral-600 hover:bg-neutral-700'
+                        }`}
+                        title="Toggle automatic background push to GitHub whenever you add/edit/delete a product"
+                      >
+                        Auto-Sync: {autoSyncOnSave ? 'ON' : 'OFF'}
+                      </button>
+                    ) : null}
+
+                    <button
+                      onClick={() => setActiveTab('github')}
+                      className="px-3 py-1 bg-[#00FFFF]/10 hover:bg-[#00FFFF]/20 text-[#00FFFF] border border-[#00FFFF]/50 rounded-lg font-marker text-[11px] flex items-center gap-1.5 self-start sm:self-auto"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{ghToken && ghOwner ? 'PUSH NOW' : 'CONNECT GITHUB'}</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Product Add / Edit Form */}
                 <div className="bg-neutral-900 border-2 border-neutral-700 rounded-xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-4 pb-2 border-b border-neutral-800">
@@ -560,7 +817,14 @@ export const AdminPanel: React.FC = () => {
                       CURRENT PRODUCT CATALOG ({products.length})
                     </span>
                     <button
-                      onClick={resetProductsToDefault}
+                      onClick={() => {
+                        if (confirm('Reset products to factory default catalog?')) {
+                          resetProductsToDefault();
+                          if (autoSyncOnSave && ghToken && ghOwner) {
+                            pushProductsToGithub(undefined, true);
+                          }
+                        }
+                      }}
                       className="text-xs font-mono text-neutral-400 hover:text-amber-400 flex items-center gap-1"
                     >
                       <RotateCcw className="w-3 h-3" />
@@ -622,7 +886,11 @@ export const AdminPanel: React.FC = () => {
                           <button
                             onClick={() => {
                               if (confirm(`Are you sure you want to delete "${prod.name}"?`)) {
+                                const nextProducts = products.filter(p => p.id !== prod.id);
                                 deleteProduct(prod.id);
+                                if (autoSyncOnSave && ghToken && ghOwner) {
+                                  pushProductsToGithub(nextProducts, true);
+                                }
                               }
                             }}
                             className="px-2.5 py-1 bg-neutral-800 hover:bg-rose-950 text-rose-400 text-xs font-mono rounded border border-neutral-600 flex items-center gap-1"
@@ -852,31 +1120,200 @@ export const AdminPanel: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 3: GITHUB PAGES & BACKUP */}
+            {/* TAB 3: GITHUB SYNC & BACKUP */}
             {activeTab === 'github' && (
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 
-                {/* Backup & Restore Box */}
-                <div className="bg-neutral-900 border-2 border-neutral-700 rounded-xl p-6">
-                  <h3 className="font-marker text-lg text-white mb-2 flex items-center gap-2">
-                    <Download className="w-5 h-5 text-[#FFCC00]" />
-                    <span>EXPORT & IMPORT BACKUP (JSON)</span>
-                  </h3>
-                  <p className="text-xs text-neutral-400 leading-relaxed mb-6">
-                    Because this site runs client-side for GitHub Pages hosting, all your changes are stored in the browser's persistent storage. You can download a full JSON snapshot of your products and socials, and restore it anytime or across different computers.
+                {/* Section 1: 1-Click Direct GitHub Repo Push */}
+                <div className="bg-[#181818] border-2 border-[#00FFFF] rounded-xl p-5 sm:p-6 shadow-[4px_4px_0px_#00FFFF]">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-marker text-lg text-[#00FFFF] flex items-center gap-2">
+                      <Send className="w-5 h-5 text-[#00FFFF]" />
+                      <span>⚡ AUTOMATIC GITHUB SYNC (1-CLICK PUSH)</span>
+                    </h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00FFFF]/20 text-[#00FFFF] border border-[#00FFFF]/30 font-bold">
+                      RECOMMENDED
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-300 leading-relaxed mb-4">
+                    Push your latest active products directly to your GitHub repository from this browser! Once pushed, your GitHub Actions workflow will instantly build and deploy the updated catalog to GitHub Pages in ~60 seconds.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <div>
+                      <label className="text-[11px] font-mono text-neutral-400 block mb-1">
+                        GITHUB USER / ORG *
+                      </label>
+                      <input
+                        type="text"
+                        value={ghOwner}
+                        onChange={(e) => setGhOwner(e.target.value)}
+                        placeholder="e.g. your-github-username"
+                        className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-1.5 text-xs text-white font-mono focus:border-[#00FFFF] outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-mono text-neutral-400 block mb-1">
+                        REPOSITORY NAME *
+                      </label>
+                      <input
+                        type="text"
+                        value={ghRepo}
+                        onChange={(e) => setGhRepo(e.target.value)}
+                        placeholder="e.g. BARNABY-BUSTER"
+                        className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-1.5 text-xs text-white font-mono focus:border-[#00FFFF] outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-mono text-neutral-400 block mb-1">
+                        TARGET BRANCH *
+                      </label>
+                      <input
+                        type="text"
+                        value={ghBranch}
+                        onChange={(e) => setGhBranch(e.target.value)}
+                        placeholder="main or root"
+                        className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-1.5 text-xs text-white font-mono focus:border-[#00FFFF] outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-mono text-neutral-400">
+                        GITHUB PERSONAL ACCESS TOKEN (PAT) *
+                      </label>
+                      <a
+                        href="https://github.com/settings/tokens/new?scopes=repo"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-mono text-[#00FFFF] hover:underline flex items-center gap-1"
+                      >
+                        <span>Generate Token (repo scope)</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <input
+                      type="password"
+                      value={ghToken}
+                      onChange={(e) => setGhToken(e.target.value)}
+                      placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-1.5 text-xs text-white font-mono focus:border-[#00FFFF] outline-none"
+                    />
+                    <p className="text-[10px] font-mono text-neutral-500 mt-1">
+                      Stored only locally in your browser's private localStorage. Never sent to any third party.
+                    </p>
+                  </div>
+
+                  {/* Auto-Sync Toggle */}
+                  <label className="flex items-center gap-3 p-3 bg-neutral-950/80 rounded-lg border border-neutral-800 cursor-pointer mb-4 hover:border-neutral-700 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={autoSyncOnSave}
+                      onChange={(e) => toggleAutoSync(e.target.checked)}
+                      className="w-4 h-4 accent-[#00FFFF] rounded cursor-pointer shrink-0"
+                    />
+                    <div>
+                      <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#00FFFF]" />
+                        <span>Automatic Background Sync on Every Add / Edit / Delete</span>
+                      </span>
+                      <span className="text-[11px] text-neutral-400 block mt-0.5">
+                        When enabled, saving or deleting any product automatically triggers a GitHub commit to <code className="text-neutral-300 font-mono">{ghOwner || 'repo'}/{ghRepo}@{ghBranch}</code> in the background without needing to press Push manually.
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* Status Banner */}
+                  {ghStatus !== 'idle' && (
+                    <div className={`p-3 rounded-lg mb-4 text-xs font-mono border flex items-center gap-2 ${
+                      ghStatus === 'pushing'
+                        ? 'bg-amber-950/40 border-amber-600/50 text-amber-300'
+                        : ghStatus === 'success'
+                        ? 'bg-emerald-950/40 border-emerald-600/50 text-emerald-300'
+                        : 'bg-rose-950/40 border-rose-600/50 text-rose-300'
+                    }`}>
+                      {ghStatus === 'pushing' && <RefreshCw className="w-4 h-4 animate-spin shrink-0" />}
+                      {ghStatus === 'success' && <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />}
+                      {ghStatus === 'error' && <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />}
+                      <span>{ghMessage}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handlePushToGithub}
+                    disabled={ghStatus === 'pushing'}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-[#00FFFF] hover:bg-[#33ffff] text-neutral-950 font-marker text-xs rounded-lg border border-black shadow-[3px_3px_0px_#fff] flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{ghStatus === 'pushing' ? 'COMMITTING TO GITHUB...' : `PUSH ${products.length} PRODUCTS TO GITHUB NOW`}</span>
+                  </button>
+                </div>
+
+                {/* Section 2: Code File Export & Copy (Offline / No Token Needed) */}
+                <div className="bg-neutral-900 border-2 border-neutral-700 rounded-xl p-5 sm:p-6 shadow-sm">
+                  <h3 className="font-marker text-lg text-white mb-2 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#FFCC00]" />
+                    <span>MANUAL CODE SYNC (NO TOKEN REQUIRED)</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed mb-4">
+                    Prefer not using a GitHub token? You can download or copy the exact formatted <code className="text-amber-400">src/data/busterData.ts</code> file with all {products.length} active products right now and commit it to git.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={handleDownloadBusterData}
+                      className="px-4 py-2.5 bg-[#FFCC00] hover:bg-[#ffe066] text-neutral-950 font-marker text-xs rounded-lg border border-black shadow-[3px_3px_0px_#fff] flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>DOWNLOAD BUSTERDATA.TS</span>
+                    </button>
+
+                    <button
+                      onClick={handleCopyCode}
+                      className="px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-marker text-xs rounded-lg border border-neutral-600 flex items-center gap-2"
+                    >
+                      {copiedCode ? (
+                        <>
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span className="text-emerald-400">COPIED TO CLIPBOARD!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 text-[#00FFFF]" />
+                          <span>COPY BUSTERDATA.TS CODE</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-mono text-neutral-500 mt-2">
+                    Destination path in repository: <code className="text-neutral-300">src/data/busterData.ts</code>
+                  </p>
+                </div>
+
+                {/* Section 3: Full JSON Backup & Restore */}
+                <div className="bg-neutral-900 border-2 border-neutral-700 rounded-xl p-5 sm:p-6">
+                  <h3 className="font-marker text-lg text-white mb-2 flex items-center gap-2">
+                    <Download className="w-5 h-5 text-[#FF3366]" />
+                    <span>EXPORT & IMPORT BACKUP (JSON)</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed mb-4">
+                    Download a full JSON snapshot of your products and socials, and restore it anytime or transfer across different computers and browsers.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={handleDownloadBackup}
-                      className="px-4 py-2.5 bg-[#FFCC00] text-neutral-950 font-marker text-xs rounded-lg border border-black shadow-[3px_3px_0px_#fff] flex items-center gap-2"
+                      className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-[#FF3366] font-marker text-xs rounded-lg border border-[#FF3366] flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" />
                       <span>DOWNLOAD SITE-DATA.JSON</span>
                     </button>
 
-                    <label className="px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-[#00FFFF] font-marker text-xs rounded-lg border border-[#00FFFF] cursor-pointer flex items-center gap-2 shadow-[2px_2px_0px_#000]">
-                      <Upload className="w-4 h-4" />
+                    <label className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-marker text-xs rounded-lg border border-neutral-600 cursor-pointer flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-[#00FFFF]" />
                       <span>RESTORE FROM JSON FILE</span>
                       <input
                         type="file"
@@ -888,47 +1325,15 @@ export const AdminPanel: React.FC = () => {
                   </div>
                 </div>
 
-                {/* GitHub Pages Hosting Guide */}
-                <div className="bg-[#181818] border-2 border-[#FF3366] rounded-xl p-6">
-                  <h3 className="font-marker text-lg text-[#FF3366] mb-3 flex items-center gap-2">
-                    <GitBranch className="w-5 h-5" />
-                    <span>HOW TO HOST ON GITHUB PAGES</span>
-                  </h3>
-                  
-                  <div className="space-y-4 text-xs font-mono text-neutral-300">
-                    <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Option A: Automated via GitHub Actions (Zero Commands)</p>
-                      <p className="text-neutral-300 leading-relaxed">
-                        We generated <code className="text-amber-400">.github/workflows/deploy.yml</code>. Whenever you push commits to GitHub, GitHub automatically builds and deploys your site!
-                      </p>
-                      <p className="text-[11px] text-neutral-400 mt-2">
-                        Just go to GitHub repo → <strong>Settings</strong> → <strong>Pages</strong> → Build and deployment Source: <strong>GitHub Actions</strong>.
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Option B: 1-Click Terminal Command</p>
-                      <p className="text-neutral-300 leading-relaxed mb-2">
-                        Run the new deploy script we configured in your package.json:
-                      </p>
-                      <code className="text-amber-400 block bg-neutral-900 p-2 rounded">
-                        npm run deploy
-                      </code>
-                      <p className="text-[11px] text-neutral-400 mt-2">
-                        This compiles the production bundle and pushes to the <code className="text-neutral-200">gh-pages</code> branch.
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                      <p className="text-[#00FFFF] font-bold mb-1">Live URL Format</p>
-                      <p className="text-neutral-300 leading-relaxed">
-                        Your site is configured with relative base paths (<code className="text-neutral-200">base: './'</code>), so it works flawlessly on any repository name or custom domain:
-                      </p>
-                      <p className="text-[#FFCC00] mt-1 font-bold">
-                        https://&lt;your-github-username&gt;.github.io/&lt;your-repository-name&gt;/
-                      </p>
-                    </div>
-                  </div>
+                {/* Section 4: GitHub Actions Deployment Status */}
+                <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-5">
+                  <h4 className="font-marker text-sm text-neutral-300 mb-2 flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-[#00FFFF]" />
+                    <span>AUTOMATIC GITHUB PAGES DEPLOYMENT (.github/workflows/deploy.yml)</span>
+                  </h4>
+                  <p className="text-xs font-mono text-neutral-400 leading-relaxed">
+                    Whenever new commits land on your <code className="text-amber-400">main</code>, <code className="text-amber-400">master</code>, or <code className="text-amber-400">root</code> branch, GitHub Actions compiles your Vite app with Node 22 and deploys it automatically to your live GitHub Pages URL with zero manual commands.
+                  </p>
                 </div>
 
               </div>

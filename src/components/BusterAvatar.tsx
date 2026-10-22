@@ -66,7 +66,7 @@ export const BusterAvatar: React.FC<BusterAvatarProps> = ({ onSqueak }) => {
       {/* Main Avatar Circle */}
       <div
         onClick={onSqueak}
-        className="w-44 h-44 sm:w-56 sm:h-56 rounded-full border-5 border-[#00FFFF] overflow-hidden shadow-[0_0_35px_rgba(0,255,255,0.45)] cursor-pointer relative bg-neutral-900 transition-transform active:scale-95 group-hover:scale-105"
+        className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-[#00FFFF] overflow-hidden shadow-[0_0_25px_rgba(0,255,255,0.45)] cursor-pointer relative bg-neutral-900 transition-transform active:scale-95 group-hover:scale-105"
         title="Barnaby Buster Bark-Waggen! Click to Bark/Squeak"
       >
         {customAvatar ? (
@@ -188,10 +188,10 @@ export const BusterAvatar: React.FC<BusterAvatarProps> = ({ onSqueak }) => {
       <button
         onClick={handleUploadClick}
         aria-label="Upload custom profile photo"
-        className="absolute bottom-1 right-1 p-2.5 rounded-full bg-[#FF3366] hover:bg-[#ff1a4d] text-white border-2 border-white shadow-[3px_3px_0px_#000] hover:scale-110 active:scale-95 transition-all z-20"
+        className="absolute bottom-0 right-0 p-2 rounded-full bg-[#FF3366] hover:bg-[#ff1a4d] text-white border-2 border-white shadow-[2px_2px_0px_#000] hover:scale-110 active:scale-95 transition-all z-20"
         title="Upload or Change Buster's Profile Picture"
       >
-        <Camera className="w-4 h-4" />
+        <Camera className="w-3.5 h-3.5" />
       </button>
 
     </div>
