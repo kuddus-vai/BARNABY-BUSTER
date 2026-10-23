@@ -25,6 +25,7 @@ import {
 import { useBuster } from '../context/BusterContext';
 import { Product, SocialLink } from '../types';
 import { VLOGS, DOG_PARKS, FAN_BARKS } from '../data/busterData';
+import { safeStorage } from '../utils/storage';
 
 export const AdminPanel: React.FC = () => {
   const {
@@ -103,10 +104,10 @@ export const AdminPanel: React.FC = () => {
   });
 
   // GitHub Direct Sync State
-  const [ghOwner, setGhOwner] = useState<string>(() => localStorage.getItem('buster_gh_owner') || '');
-  const [ghRepo, setGhRepo] = useState<string>(() => localStorage.getItem('buster_gh_repo') || 'BARNABY-BUSTER');
-  const [ghBranch, setGhBranch] = useState<string>(() => localStorage.getItem('buster_gh_branch') || 'main');
-  const [ghToken, setGhToken] = useState<string>(() => localStorage.getItem('buster_gh_token') || '');
+  const [ghOwner, setGhOwner] = useState<string>(() => safeStorage.getItem('buster_gh_owner') || '');
+  const [ghRepo, setGhRepo] = useState<string>(() => safeStorage.getItem('buster_gh_repo') || 'BARNABY-BUSTER');
+  const [ghBranch, setGhBranch] = useState<string>(() => safeStorage.getItem('buster_gh_branch') || 'main');
+  const [ghToken, setGhToken] = useState<string>(() => safeStorage.getItem('buster_gh_token') || '');
   const [ghStatus, setGhStatus] = useState<'idle' | 'pushing' | 'success' | 'error'>('idle');
   const [ghMessage, setGhMessage] = useState<string>('');
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
@@ -298,12 +299,12 @@ export const AdminPanel: React.FC = () => {
 
   // Auto-Sync to GitHub on Add/Edit/Delete preference
   const [autoSyncOnSave, setAutoSyncOnSave] = useState<boolean>(() => {
-    return localStorage.getItem('buster_auto_sync') !== 'false';
+    return safeStorage.getItem('buster_auto_sync') !== 'false';
   });
 
   const toggleAutoSync = (enabled: boolean) => {
     setAutoSyncOnSave(enabled);
-    localStorage.setItem('buster_auto_sync', enabled ? 'true' : 'false');
+    safeStorage.setItem('buster_auto_sync', enabled ? 'true' : 'false');
     showToast(enabled ? '⚡ GitHub Auto-Sync ON: Saves will push to GitHub automatically.' : 'GitHub Auto-Sync turned OFF (manual push only).');
   };
 
@@ -388,10 +389,10 @@ export const FAN_BARKS: FanBark[] = ${JSON.stringify(FAN_BARKS, null, 2)};
 
   // Push directly to GitHub repo via REST API (manual or auto)
   const pushProductsToGithub = async (overrideProducts?: Product[], isAuto = false): Promise<boolean> => {
-    const cleanOwner = ghOwner.trim() || localStorage.getItem('buster_gh_owner')?.trim() || '';
-    const cleanRepo = ghRepo.trim() || localStorage.getItem('buster_gh_repo')?.trim() || 'BARNABY-BUSTER';
-    const cleanBranch = ghBranch.trim() || localStorage.getItem('buster_gh_branch')?.trim() || 'main';
-    const cleanToken = ghToken.trim() || localStorage.getItem('buster_gh_token')?.trim() || '';
+    const cleanOwner = ghOwner.trim() || safeStorage.getItem('buster_gh_owner')?.trim() || '';
+    const cleanRepo = ghRepo.trim() || safeStorage.getItem('buster_gh_repo')?.trim() || 'BARNABY-BUSTER';
+    const cleanBranch = ghBranch.trim() || safeStorage.getItem('buster_gh_branch')?.trim() || 'main';
+    const cleanToken = ghToken.trim() || safeStorage.getItem('buster_gh_token')?.trim() || '';
     const targetProducts = overrideProducts || products;
 
     if (!cleanOwner || !cleanRepo || !cleanToken) {
@@ -410,10 +411,10 @@ export const FAN_BARKS: FanBark[] = ${JSON.stringify(FAN_BARKS, null, 2)};
     }
 
     try {
-      localStorage.setItem('buster_gh_owner', cleanOwner);
-      localStorage.setItem('buster_gh_repo', cleanRepo);
-      localStorage.setItem('buster_gh_branch', cleanBranch);
-      localStorage.setItem('buster_gh_token', cleanToken);
+      safeStorage.setItem('buster_gh_owner', cleanOwner);
+      safeStorage.setItem('buster_gh_repo', cleanRepo);
+      safeStorage.setItem('buster_gh_branch', cleanBranch);
+      safeStorage.setItem('buster_gh_token', cleanToken);
 
       const generatedCode = generateBusterDataCode(targetProducts);
       const encodedContent = btoa(unescape(encodeURIComponent(generatedCode)));

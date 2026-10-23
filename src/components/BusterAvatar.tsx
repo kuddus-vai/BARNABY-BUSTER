@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Upload, Sparkles, Dog } from 'lucide-react';
 import { useBuster } from '../context/BusterContext';
+import { safeStorage } from '../utils/storage';
 
 interface BusterAvatarProps {
   onSqueak: () => void;
@@ -14,11 +15,7 @@ export const BusterAvatar: React.FC<BusterAvatarProps> = ({ onSqueak }) => {
 
   // Load custom uploaded image if available
   const [customAvatar, setCustomAvatar] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(STORAGE_AVATAR_KEY);
-    } catch {
-      return null;
-    }
+    return safeStorage.getItem(STORAGE_AVATAR_KEY);
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,11 +32,7 @@ export const BusterAvatar: React.FC<BusterAvatarProps> = ({ onSqueak }) => {
       const result = event.target?.result as string;
       if (result) {
         setCustomAvatar(result);
-        try {
-          localStorage.setItem(STORAGE_AVATAR_KEY, result);
-        } catch (err) {
-          console.warn('Could not save to localStorage:', err);
-        }
+        safeStorage.setItem(STORAGE_AVATAR_KEY, result);
         showToast('Profile picture updated successfully!');
       }
     };

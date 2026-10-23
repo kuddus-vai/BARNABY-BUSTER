@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, SocialLink } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS } from '../data/busterData';
 import { playChaChing } from '../utils/audio';
+import { safeStorage } from '../utils/storage';
 
 const INITIAL_SOCIAL_LINKS: SocialLink[] = [
   {
@@ -82,8 +83,13 @@ const STORAGE_KEYS = {
 export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      if (saved) return JSON.parse(saved);
+      const saved = safeStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.name) {
+          return parsed;
+        }
+      }
     } catch (e) {
       console.warn('Failed to parse saved products:', e);
     }
@@ -92,8 +98,13 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.SOCIALS);
-      if (saved) return JSON.parse(saved);
+      const saved = safeStorage.getItem(STORAGE_KEYS.SOCIALS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
     } catch (e) {
       console.warn('Failed to parse saved socials:', e);
     }
@@ -102,7 +113,7 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.ADMIN_AUTH) === 'true';
+      return safeStorage.getItem(STORAGE_KEYS.ADMIN_AUTH) === 'true';
     } catch {
       return false;
     }
@@ -113,19 +124,19 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [scanlinesEnabled, setScanlinesEnabled] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Sync products to localStorage
+  // Sync products to safeStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+      safeStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
     } catch (e) {
       console.error('Failed to save products:', e);
     }
   }, [products]);
 
-  // Sync social links to localStorage
+  // Sync social links to safeStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.SOCIALS, JSON.stringify(socialLinks));
+      safeStorage.setItem(STORAGE_KEYS.SOCIALS, JSON.stringify(socialLinks));
     } catch (e) {
       console.error('Failed to save socials:', e);
     }
@@ -139,12 +150,10 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loginAdmin = (passcode: string): boolean => {
-    const cleaned = passcode.trim().toLowerCase();
+    const cleaned = (passcode || '').trim().toLowerCase();
     if (cleaned === 'buster2026' || cleaned === 'buster' || cleaned === 'admin') {
       setIsAdminAuthenticated(true);
-      try {
-        localStorage.setItem(STORAGE_KEYS.ADMIN_AUTH, 'true');
-      } catch {}
+      safeStorage.setItem(STORAGE_KEYS.ADMIN_AUTH, 'true');
       showToast('Admin Mode unlocked! You have full editor access.');
       return true;
     }
@@ -153,9 +162,7 @@ export const BusterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
-    try {
-      localStorage.removeItem(STORAGE_KEYS.ADMIN_AUTH);
-    } catch {}
+    safeStorage.removeItem(STORAGE_KEYS.ADMIN_AUTH);
     showToast('Logged out of Admin Mode');
   };
 

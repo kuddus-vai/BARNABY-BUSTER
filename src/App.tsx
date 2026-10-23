@@ -18,16 +18,23 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     // Check if URL contains /kuddus slug, or hash #/kuddus or #kuddus
     const checkSlug = () => {
-      const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, '');
-      const hash = window.location.hash.toLowerCase();
-      const search = window.location.search.toLowerCase();
+      try {
+        const loc = typeof window !== 'undefined' ? window.location : null;
+        if (!loc) return;
 
-      const isKuddusPath = pathname.endsWith('/kuddus') || pathname === 'kuddus';
-      const isKuddusHash = hash === '#/kuddus' || hash === '#kuddus';
-      const isKuddusQuery = search.includes('kuddus') || search.includes('page=kuddus');
+        const pathname = (loc.pathname || '').toLowerCase().replace(/\/+$/, '');
+        const hash = (loc.hash || '').toLowerCase();
+        const search = (loc.search || '').toLowerCase();
 
-      if (isKuddusPath || isKuddusHash || isKuddusQuery) {
-        setIsAdminOpen(true);
+        const isKuddusPath = pathname.endsWith('/kuddus') || pathname === 'kuddus';
+        const isKuddusHash = hash === '#/kuddus' || hash === '#kuddus' || hash.includes('kuddus');
+        const isKuddusQuery = search.includes('kuddus') || search.includes('page=kuddus');
+
+        if (isKuddusPath || isKuddusHash || isKuddusQuery) {
+          setIsAdminOpen(true);
+        }
+      } catch (e) {
+        console.warn('Error reading window.location:', e);
       }
     };
 

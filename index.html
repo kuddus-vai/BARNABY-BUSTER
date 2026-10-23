@@ -12,9 +12,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,900;1,400;1,900&family=Permanent+Marker&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- GitHub Pages Relative Path & 404 Redirect Resolver -->
+    <script>
+      (function() {
+        // 1. Ensure trailing slash for repository GitHub Pages so relative assets './assets/...' always resolve correctly
+        var p = window.location.pathname;
+        if (p && !p.endsWith('/') && !p.split('/').pop().includes('.')) {
+          var targetUrl = window.location.protocol + '//' + window.location.host + p + '/' + window.location.search + window.location.hash;
+          window.location.replace(targetUrl);
+          return;
+        }
+
+        // 2. Restore SPA path if redirected from 404.html
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
   </head>
   <body class="bg-[#121212] text-[#F9F9F9] antialiased selection:bg-[#FF3366] selection:text-white">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fast inline placeholder so user never sees an unstyled blank white flash -->
+      <div style="min-height:100vh;background:#121212;display:flex;align-items:center;justify-content:center;color:#FFCC00;font-family:'Montserrat',sans-serif;padding:20px;">
+        <div style="text-align:center;">
+          <h1 style="font-size:28px;margin-bottom:8px;font-weight:900;letter-spacing:1px;color:#FFCC00;">
+            BARNABY BUSTER
+          </h1>
+          <p style="color:#00FFFF;font-size:13px;font-family:monospace;">
+            ⚡ Loading official dog-cam & gear vault...
+          </p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
