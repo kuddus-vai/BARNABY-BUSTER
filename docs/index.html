@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barnaby "Buster" Bark-Waggen | Official Site</title>
+    <meta name="description" content="The official digital HQ of Barnaby 'Buster' Bark-Waggen: NYC street walker, zoomie athlete, pet-human ambassador, merch vault, soundboard, and dog park tracker." />
+    <meta property="og:title" content="Barnaby 'Buster' Bark-Waggen | Official Site" />
+    <meta property="og:description" content="The official digital HQ of Barnaby 'Buster' Bark-Waggen: NYC street walker, zoomie athlete, pet-human ambassador, merch vault, soundboard, and dog park tracker." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,900;1,400;1,900&family=Permanent+Marker&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- GitHub Pages Relative Path, /docs Auto-Resolver & Watchdog -->
+    <script>
+      (function() {
+        window.__BARNABY_BUSTER_MOUNTED__ = false;
+
+        // 1. Ensure trailing slash for repository GitHub Pages so relative assets './assets/...' always resolve correctly
+        var p = window.location.pathname;
+        if (p && !p.endsWith('/') && !p.split('/').pop().includes('.')) {
+          var targetUrl = window.location.protocol + '//' + window.location.host + p + '/' + window.location.search + window.location.hash;
+          window.location.replace(targetUrl);
+          return;
+        }
+
+        // 2. Restore SPA path if redirected from 404.html
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+
+        // 3. If running on GitHub Pages and served uncompiled from branch root, attempt seamless redirect to /docs/
+        if (window.location.hostname.includes('github.io') && !window.location.pathname.includes('/docs/')) {
+          var cleanPath = window.location.pathname.replace(/\/+$/, '');
+          var docsCheckUrl = window.location.protocol + '//' + window.location.host + cleanPath + '/docs/';
+          fetch(docsCheckUrl + 'index.html', { method: 'HEAD' })
+            .then(function(res) {
+              if (res.ok) {
+                window.location.replace(docsCheckUrl + window.location.search + window.location.hash);
+              }
+            })
+            .catch(function() {});
+        }
+
+        // 4. Watchdog: if React does not mount within 2.5s (meaning /src/main.tsx failed to load on static host), reveal helper
+        setTimeout(function() {
+          if (!window.__BARNABY_BUSTER_MOUNTED__) {
+            var loaderStatus = document.getElementById('loader-status');
+            var loaderGuide = document.getElementById('loader-guide');
+            if (loaderStatus) {
+              loaderStatus.textContent = '⚡ GitHub Pages Setup Notice';
+              loaderStatus.style.color = '#FFCC00';
+            }
+            if (loaderGuide) {
+              loaderGuide.style.display = 'block';
+            }
+          }
+        }, 2200);
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-D6uT3wNm.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-A2RhAqHx.css">
+  </head>
+  <body class="bg-[#121212] text-[#F9F9F9] antialiased selection:bg-[#FF3366] selection:text-white">
+    <div id="root">
+      <!-- Fast inline placeholder so user never sees an unstyled blank white flash -->
+      <div style="min-height:100vh;background:#121212;display:flex;align-items:center;justify-content:center;color:#FFCC00;font-family:'Montserrat',sans-serif;padding:20px;">
+        <div style="text-align:center;max-width:520px;width:100%;background:#1E1E1E;border:2px solid #FFCC00;border-radius:16px;padding:32px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.8);">
+          <div style="font-size:42px;margin-bottom:12px;">🐶⚡</div>
+          <h1 style="font-size:26px;margin:0 0 10px 0;font-weight:900;letter-spacing:1px;color:#FFCC00;text-transform:uppercase;">
+            BARNABY BUSTER
+          </h1>
+          <p id="loader-status" style="color:#00FFFF;font-size:14px;font-weight:600;margin:0 0 16px 0;font-family:monospace;">
+            ⚡ Loading official dog-cam & gear vault...
+          </p>
+
+          <!-- Auto-diagnostic helper shown ONLY if static host failed to compile /src/main.tsx -->
+          <div id="loader-guide" style="display:none;text-align:left;background:#141414;border:1px solid #FF3366;border-radius:10px;padding:16px;margin-top:16px;font-size:13px;color:#E0E0E0;line-height:1.6;">
+            <p style="color:#FF3366;font-weight:bold;margin:0 0 8px 0;font-size:14px;">
+              ⚠️ 1-Step Setup Required for GitHub Pages:
+            </p>
+            <p style="margin:0 0 8px 0;">
+              Your repository is online, but GitHub Pages is currently configured to serve uncompiled raw source files rather than the production build.
+            </p>
+            <div style="background:#252525;padding:12px;border-radius:8px;margin-bottom:12px;">
+              <strong style="color:#FFCC00;">Fast 1-Click Fix (Recommended):</strong>
+              <ol style="margin:6px 0 0 18px;padding:0;">
+                <li>Open your GitHub repo settings: <a href="https://github.com/kuddus-vai/BARNABY-BUSTER/settings/pages" target="_blank" rel="noopener" style="color:#00FFFF;text-decoration:underline;font-weight:bold;">Settings &rarr; Pages</a></li>
+                <li>Under <strong>Build and deployment &rarr; Source</strong>, switch from <strong>"Deploy from a branch"</strong> to <strong>"GitHub Actions"</strong></li>
+                <li>Click Save &mdash; the built site will go live automatically!</li>
+              </ol>
+            </div>
+            <p style="margin:0;font-size:12px;color:#AAAAAA;">
+              Alternative: Keep "Deploy from a branch" and set the folder dropdown to <code style="color:#00FFFF;background:#333;padding:2px 4px;border-radius:4px;">/docs</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

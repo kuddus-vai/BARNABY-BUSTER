@@ -7,7 +7,12 @@
       // Single Page Apps for GitHub Pages
       // Redirects 404 paths back to index.html with query/hash intact
       var path = location.pathname;
-      var repoBase = path.split('/').slice(0, 1 + (path.match(/\//g) || []).length - 1).join('/') + '/';
+      var pathSegments = path.split('/').filter(Boolean);
+      // For github.io project sites, pathSegments[0] is the repository name (e.g. 'BARNABY-BUSTER')
+      var repoBase = location.hostname.includes('github.io') && pathSegments.length > 0
+        ? '/' + pathSegments[0] + '/'
+        : '/';
+      
       if (path.toLowerCase().endsWith('/kuddus')) {
         window.location.replace(repoBase + '#/kuddus');
       } else {
